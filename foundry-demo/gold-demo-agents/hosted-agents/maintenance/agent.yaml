@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/ContainerAgent.yaml
+
+kind: hosted
+name: maintenance-scheduler-hosted
+description: |
+    A maintenance scheduling agent for tire manufacturing facilities.
+    Selects optimal maintenance windows based on work order priority and production impact.
+    Uses Cosmos DB via MCP to read available maintenance windows.
+metadata:
+    authors:
+        - TireFactory Team
+    tags:
+        - Maintenance Scheduling
+        - Tire Manufacturing
+        - MCP
+protocols:
+    - protocol: responses
+      version: ""
+tools:
+    - type: mcp
+      project_connection_id: CosmosDbMCP
+environment_variables:
+    - name: AZURE_AI_PROJECT_ENDPOINT
+      value: ${AZURE_AI_PROJECT_ENDPOINT}
+    - name: AZURE_AI_PROJECT_TOOL_CONNECTION_ID
+      value: CosmosDbMCP
+    - name: AZURE_OPENAI_ENDPOINT
+      value: ${AZURE_OPENAI_ENDPOINT}
+    - name: AZURE_OPENAI_CHAT_DEPLOYMENT_NAME
+      value: gpt-4.1

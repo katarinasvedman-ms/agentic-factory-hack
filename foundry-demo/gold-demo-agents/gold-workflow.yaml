@@ -1,0 +1,64 @@
+# Foundry Workflow - 5-Agent Factory Maintenance Chain
+# Tested 2026-02-07 - WORKING
+kind: workflow
+trigger:
+  kind: OnConversationStart
+  id: trigger_factory
+  actions:
+    - kind: SendActivity
+      id: acknowledge-input
+      activity: Analyzing fault and querying factory database...
+    - kind: InvokeAzureAgent
+      id: step1-anomaly
+      agent:
+        name: AnomalyClassification
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step2-diagnosis
+      agent:
+        name: FaultDiagnosis
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step3-repair
+      agent:
+        name: RepairPlanner
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step4-schedule
+      agent:
+        name: MaintenanceScheduler
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step5-parts
+      agent:
+        name: PartsOrder
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: EndConversation
+      id: end-conversation
+id: ""
+name: factory-workflow
+description: Factory maintenance 5-agent workflow
+
+
+# Test input:
+# machine TBM-001: [{"metric": "vibration", "value": 5.2}, {"metric": "temperature", "value": 78}]

@@ -1,0 +1,4 @@
+azure-ai-agentserver-agentframework==1.0.0b10
+azure-identity>=1.25.1
+python-dotenv>=1.0.0
+agent-framework[azure]>=1.0.0b260107
