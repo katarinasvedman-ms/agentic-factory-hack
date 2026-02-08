@@ -26,6 +26,7 @@ echo "🚀 Starting data seeding..."
 echo "📦 Installing required Python packages..."
 pip3 install azure-cosmos --quiet
 pip3 install azure-storage-blob --quiet
+pip3 install azure-identity --quiet
 
 # Create Python script to handle the data import
 cat > seed_data.py << 'EOF'

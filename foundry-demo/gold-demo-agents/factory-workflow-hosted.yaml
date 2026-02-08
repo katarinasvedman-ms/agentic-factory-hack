@@ -1,0 +1,58 @@
+kind: workflow
+trigger:
+  kind: OnConversationStart
+  id: trigger_factory
+  actions:
+    - kind: SendActivity
+      id: acknowledge-input
+      activity: Analyzing machine telemetry and querying factory database...
+    - kind: InvokeAzureAgent
+      id: step1-anomaly
+      agent:
+        name: AnomalyClassification
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step2-diagnosis
+      agent:
+        name: FaultDiagnosis
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step3-repair
+      agent:
+        name: RepairPlanner
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step4-parts
+      agent:
+        name: PartsOrder
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step5-schedule-hosted
+      agent:
+        name: maintenance-scheduler-hosted
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: EndConversation
+      id: end-conversation
+id: ""
+name: factory-workflow-hosted
+description: Factory maintenance workflow with 4 prompt agents and 1 hosted agent

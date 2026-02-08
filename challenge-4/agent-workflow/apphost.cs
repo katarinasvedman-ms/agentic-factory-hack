@@ -19,9 +19,8 @@ var app = builder.AddUvicornApp("app", "./app", "main:app")
 var appApiEndpoint = app.GetEndpoint("api");
 
 var dotnetworkflow = builder.AddCSharpApp("dotnetworkflow", "./dotnetworkflow/FactoryWorkflow.csproj")
-    .WithExternalHttpEndpoints()
     // .WithEnvironment("SSL_CERT_DIR", "/etc/ssl/certs")
-   // .WithHttpEndpoint(port:8001, env: "DOTNETWORKFLOW_PORT", name: "api")
+    .WithExternalHttpEndpoints()
     .WithEnvironment("SSL_CERT_FILE", "/etc/ssl/certs/ca-certificates.crt")
     .WithReference(app)
     .WithEnvironment("MAINTENANCE_SCHEDULER_AGENT_URL", ReferenceExpression.Create($"{appApiEndpoint}/maintenance-scheduler"))
@@ -32,6 +31,7 @@ var dotnetworkflow = builder.AddCSharpApp("dotnetworkflow", "./dotnetworkflow/Fa
 var apiEndpoint = dotnetworkflow.GetEndpoint("http")
     ?? throw new InvalidOperationException("Expected 'http' endpoint for 'dotnetworkflow' was not created.");
 var frontend = builder.AddViteApp("frontend", "./frontend")
+    .WithExternalHttpEndpoints()
     .WithReference(dotnetworkflow)
     .WithReference(app)
     .WithEnvironment("VITE_API_URL", () =>

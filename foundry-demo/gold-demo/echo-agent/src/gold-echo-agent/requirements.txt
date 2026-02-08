@@ -1,0 +1,5 @@
+# GOLD Demo Echo Agent Dependencies
+# Minimal - only what's needed for hosted agent
+azure-ai-agentserver-agentframework==1.0.0b10
+azure-identity==1.21.0
+python-dotenv==1.1.1

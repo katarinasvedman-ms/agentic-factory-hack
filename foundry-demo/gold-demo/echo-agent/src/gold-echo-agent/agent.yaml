@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/ContainerAgent.yaml
+# =============================================================================
+# GOLD Demo Echo Agent Manifest
+# =============================================================================
+# Minimal echo agent for Canary A testing.
+# NO tools, NO external dependencies - just echoes messages.
+# =============================================================================
+
+kind: hosted
+name: gold-echo-agent
+description: |
+    GOLD Demo canary agent. Echoes user messages with a prefix.
+    Used for stability testing before adding tools/workflows.
+    
+metadata:
+    authors:
+        - GOLD Demo Team
+    tags:
+        - Echo
+        - Canary
+        - GOLD Demo
+
+protocols:
+    - protocol: responses
+      version: ""
+
+environment_variables:
+    - name: AZURE_AI_PROJECT_ENDPOINT
+      value: ${AZURE_AI_PROJECT_ENDPOINT}

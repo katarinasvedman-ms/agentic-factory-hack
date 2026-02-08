@@ -1,207 +1,203 @@
-# Foundry Demo: Visual Workflow with ServiceNow Integration
+# Azure AI Foundry Demo: Factory Maintenance Workflow
 
-This folder contains a demonstration of the Factory Maintenance Agentic Workflow defined in YAML format for visualization in the Azure AI Foundry portal, plus a Logic App integration with ServiceNow for enterprise ticket management.
+> **🎯 Show 3 things:**
+> 
+> **1. Foundry Custom Tools** (MCP + Logic App → Cosmos DB)
+> 
+> **2. Workflows** (Declarative YAML orchestration)
+> 
+> **3. Hosted Agents** (Custom Python code in containers)
 
-## 📁 Contents
+---
 
-| File | Description |
-|------|-------------|
-| [factory-workflow.yaml](factory-workflow.yaml) | Declarative workflow definition for Foundry portal visualization |
-| [servicenow-logic-app.json](servicenow-logic-app.json) | ARM template for ServiceNow Logic App connector |
-| [sample-input.json](sample-input.json) | Sample telemetry input for testing |
+A complete multi-agent workflow demonstrating Azure AI Foundry's agent orchestration, MCP tool integration, and hosted agent capabilities.
 
-## 🎯 Overview
+## What This Demo Shows
 
-This demo extends Challenge 4's agent workflow with:
+- **5 AI Agents** working in sequence to handle factory anomalies
+- **MCP Tools** connecting agents to Cosmos DB via Logic App
+- **Hosted Agents** running custom Python code in Azure Container Apps
+- **Declarative YAML Workflows** defining agent orchestration
 
-1. **Foundry Workflow YAML** - A declarative workflow that can be imported into Azure AI Foundry for visual representation
-2. **ServiceNow Logic App Tool** - Enterprise ITSM integration for automatic ticket creation
-3. **Visual Agent Pipeline** - See the sequential agent flow in the Foundry UI
-
-### Workflow Architecture
+## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        Azure AI Foundry Workflow                            │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐    │
-│  │   Anomaly   │──▶│    Fault    │──▶│   Repair    │──▶│ Maintenance │    │
-│  │Classification│   │  Diagnosis  │   │  Planning   │   │ Scheduling  │    │
-│  │   Agent     │   │    Agent    │   │   Agent     │   │   Agent     │    │
-│  └─────────────┘   └─────────────┘   └─────────────┘   └─────────────┘    │
-│         │                 │                 │                 │            │
-│         ▼                 ▼                 ▼                 ▼            │
-│  ┌─────────────────────────────────────────────────────────────────────┐  │
-│  │                        Foundry Agent Service                         │  │
-│  └─────────────────────────────────────────────────────────────────────┘  │
-│                                                                             │
-│  ┌─────────────┐   ┌─────────────────────────────────────────────────┐    │
-│  │   Parts     │──▶│              ServiceNow Logic App              │    │
-│  │  Ordering   │   │         (Create Incident Ticket)               │    │
-│  │   Agent     │   └─────────────────────────────────────────────────┘    │
-│  └─────────────┘                         │                                 │
-│                                          ▼                                 │
-│                               ┌─────────────────┐                          │
-│                               │   ServiceNow    │                          │
-│                               │     ITSM        │                          │
-│                               └─────────────────┘                          │
-└─────────────────────────────────────────────────────────────────────────────┘
+User Input (Telemetry)
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    factory-workflow-hosted                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌────────────────┐    ┌────────────────┐    ┌───────────────┐  │
+│  │   Anomaly      │───▶│     Fault      │───▶│    Repair     │  │
+│  │Classification  │    │   Diagnosis    │    │   Planner     │  │
+│  │  (Prompt)      │    │   (Prompt)     │    │  (Prompt)     │  │
+│  │                │    │                │    │               │  │
+│  │ 🔧 Thresholds  │    │ 🔧 KnowledgeBase│   │ 🔧 Technicians│  │
+│  │ 🔧 Machines    │    │ 🔧 Machines    │    │ 🔧 Parts      │  │
+│  └───────┬────────┘    └───────┬────────┘    └───────┬───────┘  │
+│          │                     │                     │          │
+│          ▼                     ▼                     ▼          │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                     MCP Tool: CosmosDbMCP                │   │
+│  │                    (Logic App connector)                 │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│          ▲                     ▲                     ▲          │
+│          │                     │                     │          │
+│  ┌───────┴────────┐    ┌───────┴────────────────────┴───────┐   │
+│  │ Parts Order    │    │   Maintenance Scheduler            │   │
+│  │  (Prompt)      │    │  (Hosted Agent - Python)           │   │
+│  │                │    │                                    │   │
+│  │ 🔧 Parts       │    │ 🔧 MaintenanceWindows              │   │
+│  │ 🔧 Suppliers   │    │ 🔧 WorkOrders                      │   │
+│  └────────────────┘    └────────────────────────────────────┘   │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+                      ┌─────────────────────┐
+                      │     Cosmos DB       │
+                      │   (gold-demo-cosmos)│
+                      │                     │
+                      │ • Machines          │
+                      │ • Technicians       │
+                      │ • PartsInventory    │
+                      │ • Thresholds        │
+                      │ • KnowledgeBase     │
+                      │ • WorkOrders        │
+                      │ • MaintenanceWindows│
+                      │ • Suppliers         │
+                      └─────────────────────┘
 ```
 
-## 🚀 Deployment
+## 📁 Project Structure
+
+```
+foundry-demo/
+├── README.md                    # This file
+├── GOLD-DEMO-RUNBOOK.md        # Detailed runbook with commands
+├── SESSION-GROUNDING.md        # Session continuity notes
+├── sample-input.json           # Test telemetry data
+│
+└── gold-demo-agents/            # ✅ All demo assets
+    ├── factory-workflow-hosted.yaml   # Main workflow (4 prompt + 1 hosted)
+    ├── gold-workflow.yaml             # Backup workflow (5 prompt agents)
+    ├── seed-cosmos-gold.sh            # Seed core Cosmos data
+    ├── seed-cosmos-challenge3.sh      # Seed additional containers
+    │
+    ├── anomaly-classification-agent.yaml
+    ├── fault-diagnosis-agent.yaml
+    ├── repair-planner-agent.yaml
+    ├── parts-order-agent.yaml
+    ├── maintenance-scheduler-agent.yaml
+    │
+    └── hosted-agents/            # Hosted agent code
+        └── maintenance/
+            ├── main.py           # Agent implementation
+            ├── Dockerfile
+            ├── requirements.txt
+            └── agent.yaml
+```
+
+## 🚀 Quick Start (Demo)
 
 ### Prerequisites
+- Azure CLI logged in
+- Access to Azure AI Foundry project `ai-project-echo-agent-france`
 
-- Azure subscription with Azure AI Foundry access
-- ServiceNow instance (optional, for full integration)
-- Completed Challenge 1 agents deployed to Foundry Agent Service
+### Test the Workflow
 
-### Step 1: Deploy the ServiceNow Logic App
+**In Foundry Portal:**
+1. Open [Azure AI Foundry](https://ai.azure.com)
+2. Navigate to project `ai-project-echo-agent-france`
+3. Go to **Agent Applications** → `factory-workflow-hosted`
+4. Click **Open app** to launch playground
+5. Enter test prompt:
 
-```bash
-# Set your variables
-RESOURCE_GROUP="your-resource-group"
-SERVICENOW_INSTANCE="yourcompany.service-now.com"
-SERVICENOW_USER="api_user"
-
-# Deploy the Logic App
-az deployment group create \
-  --resource-group $RESOURCE_GROUP \
-  --template-file servicenow-logic-app.json \
-  --parameters \
-    servicenowInstance=$SERVICENOW_INSTANCE \
-    servicenowUsername=$SERVICENOW_USER
-
-# Get the Logic App callback URL
-az logic workflow show \
-  --resource-group $RESOURCE_GROUP \
-  --name factory-servicenow-connector \
-  --query "accessEndpoint" -o tsv
+```
+machine TBM-001: [{"metric": "vibration", "value": 5.2}, {"metric": "temperature", "value": 78}]
 ```
 
-### Step 2: Configure Environment Variables
+**Expected Output:**
+- Anomaly classified as building_drum_vibration
+- Fault diagnosed with root cause
+- Work order created
+- Parts ordered with supplier info
+- Maintenance scheduled with specific window
 
-Add these to your `.env` file:
+### Test via API
 
 ```bash
-# Agent endpoints (from Challenge 4)
-AZURE_AI_PROJECT_ENDPOINT=https://your-project.cognitiveservices.azure.com/
-REPAIR_PLANNER_AGENT_URL=https://localhost:5231/repair-planner
-MAINTENANCE_SCHEDULER_AGENT_URL=https://localhost:8000/maintenance-scheduler
-PARTS_ORDERING_AGENT_URL=https://localhost:8000/parts-ordering
+# Get token
+TOKEN=$(az account get-access-token --resource https://ai.azure.com --query accessToken -o tsv)
 
-# ServiceNow Logic App
-SERVICENOW_LOGIC_APP_RESOURCE_ID=/subscriptions/.../resourceGroups/.../providers/Microsoft.Logic/workflows/factory-servicenow-connector
-
-# Notifications (optional)
-ALERT_EMAIL=factory-ops@yourcompany.com
-TEAMS_WEBHOOK_URL=https://outlook.office.com/webhook/...
+# Call workflow
+curl -X POST "https://ai-account-gihq46bsniq44.services.ai.azure.com/api/projects/ai-project-echo-agent-france/applications/factory-workflow-hosted?api-version=2025-05-01-preview" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"input": "machine TBM-001: [{\"metric\": \"vibration\", \"value\": 5.2}, {\"metric\": \"temperature\", \"value\": 78}]"}'
 ```
 
-### Step 3: Import Workflow to Foundry Portal
+## 🔧 Key Components
 
-1. Navigate to [Azure AI Foundry](https://ai.azure.com)
-2. Open your project
-3. Go to **Workflows** (or **Build** > **Workflows**)
-4. Click **+ Create workflow** > **Import from YAML**
-5. Upload `factory-workflow.yaml`
-6. Review the visual pipeline and click **Create**
+### Azure Resources
 
-## 🔧 Workflow Components
+| Resource | Purpose |
+|----------|---------|
+| `ai-project-echo-agent-france` | AI Foundry project |
+| `gold-demo-cosmos` | Cosmos DB with factory data |
+| `logicapp-957898-cosmos` | Logic App exposing MCP tools |
+| `crgihq46bsniq44.azurecr.io` | Container registry for hosted agents |
 
 ### Agents
 
-| Agent | Type | Hosting | Description |
-|-------|------|---------|-------------|
-| AnomalyClassificationAgent | Foundry Agent | Agent Service | Classifies telemetry anomalies |
-| FaultDiagnosisAgent | Foundry Agent | Agent Service | Diagnoses root causes |
-| RepairPlannerAgent | Local Agent | Self-hosted | Creates work orders with Cosmos DB |
-| MaintenanceSchedulerAgent | A2A Agent | Python service | Schedules maintenance windows |
-| PartsOrderingAgent | A2A Agent | Python service | Orders required parts |
+| Agent | Type | MCP Tools |
+|-------|------|-----------|
+| AnomalyClassification | Prompt | Thresholds, Machines |
+| FaultDiagnosis | Prompt | KnowledgeBase, Machines |
+| RepairPlanner | Prompt | Technicians, PartsInventory |
+| PartsOrder | Prompt | PartsInventory, Suppliers |
+| maintenance-scheduler-hosted | Hosted | MaintenanceWindows, WorkOrders |
 
-### Tools
+### MCP Tool Connection
 
-| Tool | Type | Description |
-|------|------|-------------|
-| servicenow_create_incident | Logic App | Creates ServiceNow incident tickets |
+All agents connect to Cosmos DB through `CosmosDbMCP`:
+- **Type**: Logic App MCP Server
+- **Auth**: Project Managed Identity
+- **Containers**: Machines, Technicians, PartsInventory, Thresholds, KnowledgeBase, WorkOrders, MaintenanceWindows, Suppliers
 
-## 📊 Sample Input
+## 🔄 Deploying Hosted Agent Updates
 
-```json
-{
-  "machine_telemetry": {
-    "machine_id": "M-001",
-    "temperature": 92.5,
-    "vibration": 4.8,
-    "pressure": 145.2,
-    "timestamp": "2026-02-03T10:30:00Z"
-  }
-}
+```bash
+cd /workspaces/agentic-factory-hack/foundry-demo/gold-demo-agents/hosted-agents
+
+# Deploy changes (NEVER use azd up/down!)
+azd deploy --no-prompt
 ```
 
-## 🔍 Viewing in Foundry Portal
+## 📊 Cosmos DB Data
 
-Once imported, the workflow will appear as a visual pipeline:
+Seeded containers:
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                    Factory Maintenance Workflow                   │
-├──────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│   [Input: machine_telemetry]                                      │
-│              │                                                    │
-│              ▼                                                    │
-│   ┌──────────────────────┐                                       │
-│   │ 1️⃣ Anomaly          │                                       │
-│   │    Classification     │                                       │
-│   └──────────────────────┘                                       │
-│              │                                                    │
-│              ▼                                                    │
-│   ┌──────────────────────┐                                       │
-│   │ 2️⃣ Fault            │   (conditional: if anomaly detected)  │
-│   │    Diagnosis          │                                       │
-│   └──────────────────────┘                                       │
-│              │                                                    │
-│              ▼                                                    │
-│   ┌──────────────────────┐                                       │
-│   │ 3️⃣ Repair           │                                       │
-│   │    Planning           │                                       │
-│   └──────────────────────┘                                       │
-│              │                                                    │
-│              ▼                                                    │
-│   ┌──────────────────────┐                                       │
-│   │ 4️⃣ Maintenance      │                                       │
-│   │    Scheduling         │                                       │
-│   └──────────────────────┘                                       │
-│              │                                                    │
-│              ▼                                                    │
-│   ┌──────────────────────┐                                       │
-│   │ 5️⃣ Parts            │                                       │
-│   │    Ordering           │                                       │
-│   └──────────────────────┘                                       │
-│              │                                                    │
-│              ▼                                                    │
-│   ┌──────────────────────┐                                       │
-│   │ 6️⃣ ServiceNow       │   (Logic App Tool)                    │
-│   │    Ticket Creation    │                                       │
-│   └──────────────────────┘                                       │
-│              │                                                    │
-│              ▼                                                    │
-│   [Output: analysis_result, work_order_id, servicenow_ticket_id] │
-│                                                                   │
-└──────────────────────────────────────────────────────────────────┘
-```
+| Container | Data |
+|-----------|------|
+| Machines | TBM-001, TCP-001, TUM-001 |
+| Technicians | Anna, Erik, Lars |
+| PartsInventory | Bearings, heaters, sensors |
+| Thresholds | Machine type limits |
+| KnowledgeBase | Fault diagnosis procedures |
+| WorkOrders | Sample pending orders |
+| MaintenanceWindows | Available scheduling slots |
+| Suppliers | Nordic, Euro Heating, Sensor Tech |
 
-## 🔗 Related Resources
+## 📚 Documentation
 
-- [Azure AI Foundry Workflows Documentation](https://learn.microsoft.com/azure/ai-studio/concepts/workflows)
-- [Logic Apps ServiceNow Connector](https://learn.microsoft.com/connectors/service-now/)
-- [Challenge 4 - Agent Workflow](../challenge-4/README.md)
+- [GOLD-DEMO-RUNBOOK.md](GOLD-DEMO-RUNBOOK.md) - Full technical runbook
+- [SESSION-GROUNDING.md](SESSION-GROUNDING.md) - Session notes and context
 
-## ⚠️ Notes
+## ⚠️ Important Notes
 
-- The YAML schema used here is illustrative of Foundry workflow capabilities
-- Actual schema may vary based on Foundry SDK version
-- For production, secure all credentials using Azure Key Vault
-- Test the Logic App separately before integrating with the workflow
+- **Do NOT run `azd up` or `azd down`** - only use `azd deploy`
+- Hosted agents must be **last in workflow** (they terminate the chain)
+- MCP tools require Project Managed Identity permissions on Logic App

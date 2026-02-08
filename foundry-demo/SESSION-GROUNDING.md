@@ -1,7 +1,7 @@
 # 🧠 Session Grounding - Gold Demo Build
 
 > **Read this first tomorrow to continue where we left off**
-> **Last updated:** 2026-02-07 18:30 UTC
+> **Last updated:** 2026-02-08 10:00 UTC
 
 ---
 
@@ -11,13 +11,13 @@ Build a complete **Azure AI Foundry demo** showcasing:
 1. ✅ **Foundry Tools (MCP)** - Logic App exposing Cosmos DB as MCP server
 2. ✅ **Prompt Agents** - 5 agents chained in a workflow
 3. ✅ **Hosted Agents** - Code-based agent deployed to Foundry
-4. ⏳ **Workflow with Hosted Agent** - Replace prompt agent with hosted in workflow
+4. ✅ **Workflow with Hosted Agent** - Hosted agent integrated into workflow
 
-**Demo date:** Monday (2 days away)
+**Demo date:** Monday (1 day away)
 
 ---
 
-## ✅ What We Accomplished Today
+## ✅ What We Accomplished (2026-02-07 + 2026-02-08)
 
 ### 1. Infrastructure
 - Created Cosmos DB `gold-demo-cosmos` (serverless, Managed Identity)
@@ -28,22 +28,22 @@ Build a complete **Azure AI Foundry demo** showcasing:
 ### 2. Prompt Agents (All Working)
 | Agent | Purpose | MCP Calls |
 |-------|---------|-----------|
-| AnomalyClassification | Detect threshold violations | 2 |
+| AnomalyClassification | Detect threshold violations | 1 |
 | FaultDiagnosis | Identify root cause | 1 |
-| RepairPlanner | Create work order | 1 |
-| MaintenanceScheduler | Select maintenance window | 1 |
-| PartsOrder | Check inventory/order parts | 1 |
+| RepairPlanner | Create work order | 2 |
+| PartsOrder | Check inventory/order parts | 1-2 |
 
-### 3. Workflow (Working)
-- 5-agent chain using `System.LastMessage` for context passing
-- All agents have `autoSend: true`
-- Total: **6 MCP calls** per execution
-
-### 4. Hosted Agent (Deployed & Working)
-- `maintenance-scheduler-hosted` v2 deployed
+### 3. Hosted Agent (v4 Deployed & Working)
+- `maintenance-scheduler-hosted` v4 deployed
 - Uses `agent-framework[azure]>=1.0.0b260107`
 - Successfully calls MCP tool from container
-- Verified in Foundry traces: 2 Tool calls visible
+- Integrated into workflow as final step
+
+### 4. Two Working Workflows
+| Workflow | Agents | Status |
+|----------|--------|--------|
+| `factory-workflow` | 5 prompt agents | ✅ Working |
+| `factory-workflow-hosted` | 4 prompt + 1 hosted | ✅ Working |
 
 ---
 
@@ -75,7 +75,7 @@ Build a complete **Azure AI Foundry demo** showcasing:
 
 ## 🧪 Test Commands
 
-### Test Prompt Agents (via Portal)
+### Test Full Workflow with Hosted Agent (via Portal)
 ```
 machine TBM-001: [{"metric": "vibration", "value": 5.2}, {"metric": "temperature", "value": 78}]
 ```
@@ -95,18 +95,27 @@ az cognitiveservices agent show \
 
 ---
 
-## ⏭️ Next Steps (Tomorrow)
+## ✅ Completed (2026-02-08)
 
-1. **Add hosted agent to workflow**
-   - Replace prompt-based MaintenanceScheduler with hosted version
-   - Test workflow with hosted agent in chain
+1. ✅ **Hosted agent integrated into workflow**
+   - Created `factory-workflow-hosted` with 4 prompt agents + 1 hosted agent
+   - Hosted agent placed at end of workflow (PartsOrder → maintenance-scheduler-hosted)
+   - Full workflow tested and working
 
-2. **Optional: Create PartsOrder as hosted agent**
-   - Similar pattern to MaintenanceScheduler
+2. ✅ **Updated hosted agent to v4**
+   - Fixed output format to show full work order number
+   - Improved instructions for workflow context
 
-3. **Polish demo flow**
+---
+
+## ⏭️ Next Steps (Demo Day - Monday)
+
+1. **Polish demo flow**
    - Practice the demo sequence
    - Prepare talking points
+
+2. **Optional enhancements**
+   - Create PartsOrder as hosted agent (if time permits)
 
 ---
 
@@ -132,13 +141,14 @@ azd deploy --no-prompt  # Safe - only deploys code
 3. **Package versions matter** - use `agent-framework[azure]>=1.0.0b260107`
 4. **azd env must be set correctly** - `AZURE_AI_PROJECT_ID`, `AZURE_AI_PROJECT_ENDPOINT`, `AZURE_OPENAI_ENDPOINT`
 5. **Traces show MCP calls** - Look for "Tool ✓" entries in Foundry traces
+6. **Hosted agents in workflows** - Place hosted agents at end of workflow chain for reliable execution
 
 ---
 
 ## 🔗 Quick Links
 
 - [Foundry Portal](https://ai.azure.com)
-- [Hosted Agent Playground](https://ai.azure.com/nextgen/r/wUvdYh5PT8yXkP_fzQUcXw,rg-echo-agent-france,,ai-account-gihq46bsniq44,ai-project-echo-agent-france/build/agents/maintenance-scheduler-hosted/build?version=2)
+- [Hosted Agent Playground v4](https://ai.azure.com/nextgen/r/wUvdYh5PT8yXkP_fzQUcXw,rg-echo-agent-france,,ai-account-gihq46bsniq44,ai-project-echo-agent-france/build/agents/maintenance-scheduler-hosted/build?version=4)
 - [Resource Group](https://portal.azure.com/#@/resource/subscriptions/c14bdd62-1e4f-4fcc-9790-ffdfcd051c5f/resourceGroups/rg-echo-agent-france/overview)
 
 ---
@@ -147,7 +157,7 @@ azd deploy --no-prompt  # Safe - only deploys code
 
 When continuing this session:
 1. Read `/foundry-demo/GOLD-DEMO-RUNBOOK.md` for full context
-2. The goal is to integrate the hosted agent into the workflow
+2. ✅ Hosted agent is integrated into workflow - use `factory-workflow-hosted`
 3. Use `azd deploy` only - never `azd up` or `azd down`
-4. All 5 prompt agents are working - don't recreate them
-5. The hosted agent `maintenance-scheduler-hosted` v2 is deployed and working
+4. All agents are working - both workflows are demo-ready
+5. The hosted agent `maintenance-scheduler-hosted` v4 is deployed and working

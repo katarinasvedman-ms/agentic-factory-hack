@@ -1,0 +1,9 @@
+{
+  "machine_telemetry": {
+    "machine_id": "M-001",
+    "temperature": 92.5,
+    "vibration": 4.8,
+    "pressure": 145.2,
+    "timestamp": "2026-02-03T10:30:00Z"
+  }
+}

@@ -47,7 +47,7 @@ machine TBM-001: [{"metric": "vibration", "value": 5.2}, {"metric": "temperature
 
 ---
 
-## 🐳 HOSTED AGENT (Deployed 2026-02-07)
+## 🐳 HOSTED AGENT (Updated 2026-02-08)
 
 > **Bonus demo feature:** Shows code-based agent deployment with MCP tools
 
@@ -56,9 +56,9 @@ machine TBM-001: [{"metric": "vibration", "value": 5.2}, {"metric": "temperature
 | Property | Value |
 |----------|-------|
 | **Name** | `maintenance-scheduler-hosted` |
-| **Version** | 2 |
-| **Endpoint** | `https://ai-account-gihq46bsniq44.services.ai.azure.com/api/projects/ai-project-echo-agent-france/agents/maintenance-scheduler-hosted/versions/2` |
-| **Playground** | [Open in Foundry](https://ai.azure.com/nextgen/r/wUvdYh5PT8yXkP_fzQUcXw,rg-echo-agent-france,,ai-account-gihq46bsniq44,ai-project-echo-agent-france/build/agents/maintenance-scheduler-hosted/build?version=2) |
+| **Version** | 4 |
+| **Endpoint** | `https://ai-account-gihq46bsniq44.services.ai.azure.com/api/projects/ai-project-echo-agent-france/agents/maintenance-scheduler-hosted/versions/4` |
+| **Playground** | [Open in Foundry](https://ai.azure.com/nextgen/r/wUvdYh5PT8yXkP_fzQUcXw,rg-echo-agent-france,,ai-account-gihq46bsniq44,ai-project-echo-agent-france/build/agents/maintenance-scheduler-hosted/build?version=4) |
 | **MCP Tool** | `CosmosDbMCP` |
 | **Model** | `gpt-4.1` |
 
@@ -75,7 +75,7 @@ Maintenance Schedule:
 - Selected Window: MW-20260208-NIGHT
 - Scheduled: 2026-02-08T22:00:00Z to 2026-02-09T06:00:00Z
 - Production Impact: Low
-- Reasoning: High priority → earliest Low impact window
+- Reasoning: High priority work order—selected the earliest available window with Low production impact.
 ```
 
 ### Code Location
@@ -109,9 +109,9 @@ az cognitiveservices agent show \
     --name maintenance-scheduler-hosted
 ```
 
-### TODO: Add to Workflow
+### ✅ COMPLETED: Hosted Agent in Workflow (2026-02-08)
 
-The hosted agent can replace the prompt-based `MaintenanceScheduler` in the workflow. This is pending for the next session.
+The hosted agent is now integrated into `factory-workflow-hosted`. See "Working Workflow with Hosted Agent" section below.
 
 ---
 
@@ -520,6 +520,89 @@ machine TBM-001: [{"metric": "vibration", "value": 5.2}, {"metric": "temperature
 
 ---
 
+## ✅ Working Workflow with Hosted Agent - TESTED 2026-02-08
+
+**Name:** `factory-workflow-hosted`
+
+> 4 prompt agents + 1 hosted agent (`maintenance-scheduler-hosted`)
+
+```yaml
+kind: workflow
+trigger:
+  kind: OnConversationStart
+  id: trigger_factory
+  actions:
+    - kind: SendActivity
+      id: acknowledge-input
+      activity: Analyzing machine telemetry and querying factory database...
+    - kind: InvokeAzureAgent
+      id: step1-anomaly
+      agent:
+        name: AnomalyClassification
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step2-diagnosis
+      agent:
+        name: FaultDiagnosis
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step3-repair
+      agent:
+        name: RepairPlanner
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step4-parts
+      agent:
+        name: PartsOrder
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: InvokeAzureAgent
+      id: step5-schedule-hosted
+      agent:
+        name: maintenance-scheduler-hosted
+      conversationId: =System.ConversationId
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+    - kind: EndConversation
+      id: end-conversation
+id: ""
+name: factory-workflow-hosted
+description: Factory maintenance workflow with 4 prompt agents and 1 hosted agent
+```
+
+**Test input:**
+```
+machine TBM-001: [{"metric": "vibration", "value": 5.2}, {"metric": "temperature", "value": 78}]
+```
+
+**Expected flow:**
+1. AnomalyClassification → Queries Thresholds → Detects vibration anomaly
+2. FaultDiagnosis → Queries KnowledgeBase → Identifies building_drum_vibration
+3. RepairPlanner → Queries Technicians + Parts → Returns JSON work order
+4. PartsOrder → Queries PartsInventory + Suppliers → Confirms in stock
+5. **maintenance-scheduler-hosted** → Queries MaintenanceWindows → Selects MW-20260208-NIGHT
+
+**Note:** The hosted agent is placed at the end of the workflow. During testing, we observed that hosted agents using the `responses` protocol may behave differently than prompt agents in workflow chains.
+
+---
+
 ## 🔧 Quick Recreation Commands
 
 ### Create Cosmos DB (Serverless + MI)
@@ -553,10 +636,16 @@ for c in Machines Technicians PartsInventory Thresholds KnowledgeBase WorkOrders
 done
 ```
 
-### Seed Data Script
+### Seed Data Scripts
 ```bash
-# Use seed-cosmos-gold.sh in /foundry-demo/
+# Both scripts in /foundry-demo/gold-demo-agents/
+cd /foundry-demo/gold-demo-agents
+
+# 1. Core data: Machines, Technicians, PartsInventory, Thresholds, KnowledgeBase
 ./seed-cosmos-gold.sh "https://gold-demo-cosmos.documents.azure.com:443/"
+
+# 2. Challenge 3 data: WorkOrders, MaintenanceWindows, Suppliers
+./seed-cosmos-challenge3.sh
 ```
 
 ### Create Logic App MCP (via Portal)
@@ -688,7 +777,7 @@ az cognitiveservices account list -o table | grep gold
 
 **Förbered echo-agent:**
 ```bash
-cd /workspaces/agentic-factory-hack/foundry-demo/hosted-agents
+cd /workspaces/agentic-factory-hack/foundry-demo/gold-demo-agents/hosted-agents
 
 # Skapa minimal echo-agent katalog
 mkdir -p gold-echo-agent/src/echo-agent
